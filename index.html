@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Net Ninja's Match Generator</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #000;
+    color: #fff;
+    font-family: 'Helvectica', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  #app {
+    background: #111;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    padding: 2rem 1.5rem;
+    max-width: 420px;
+    /* width: 100%; */
+    margin: 2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1, h2 {
+    text-align: center;
+    color: #FF3EA0;
+  }
+  h2 {
+    margin-top: 1rem;
+  }
+  textarea, input {
+    margin-bottom: 1rem;
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #FF3EA0;
+    border-radius: 5px;
+    font-size: 1rem;
+    background: #222;
+    color: #fff;
+    box-sizing: border-box;
+  }
+  button {
+    padding: 0.75rem 1rem;
+    margin-top: 1rem;
+    width: 100%;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #FF3EA0;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+  button:hover {
+    background-color: #b82c27;
+  }
+  .tournament {
+    padding-top:2rem;
+    width: 100%;
+  }
+  .match {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: #181818;
+    border: 1px solid #FF3EA0;
+    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(218,58,52,0.08);
+    color: #fff;
+  }
+  .match-title {
+    font-size: 1.2rem;
+    color: #EEE;
+    margin-bottom: 0.5rem;
+  }
+  .score-input {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  .score-input label {
+    font-size: 1rem;
+    color: grey;
+  }
+  .player-input {
+    height: 200px;
+    background: #222;
+    color: #fff;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+  }
+  li {
+    padding: 0.5rem;
+    background-color: #181818;
+    border: 1px solid #FF3EA0;
+    border-radius: 5px;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 2px 4px rgba(218,58,52,0.08);
+    color: #fff;
+    font-weight: 500;
+  }
+  .small {
+    font-size: 0.8rem;
+    color: #888;
+  }
+  .report {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2rem;
+  }
+  .score-list {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  /* Mobile View Adjustments */
+  @media (max-width: 500px) {
+    #app {
+      padding: 1rem 0.5rem;
+      max-width: 98vw;
+    }
+    h1, h2 {
+      font-size: 1.3rem;
+    }
+    button {
+      font-size: 1rem;
+    }
+    .score-input label {
+      font-size: 0.95rem;
+    }
+    textarea {
+      height: 100px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div id="app">
+    <img src="https://i.imgur.com/vIEktyV.jpeg" alt="Net Ninja Logo" style="width: 100px;">
+    <h1>Net Ninja's Match Generator</h1>
+    <div v-if="!tournamentStarted">
+      <p>Enter player names (one per line, divisible by 4):</p>
+      <textarea v-model="playerInput" class="player-input" placeholder="..." class="player-input"></textarea>
+      <button @click="startTournament">Start Tournament</button>
+    </div>
+
+    <div v-else class="tournament">
+      <div v-if="!showReport">
+        <h2>Round {{ currentRound }}</h2>
+        <div v-for="(match, index) in matches" :key="index" class="match">
+          <div class="match-title"><strong>Match {{ index + 1 }}</strong>: {{ match.team1.join(' & ') }} 
+            <span class="small">vs</span> {{ match.team2.join(' & ') }}</div><br>
+          <div class="score-input">
+            <label>
+              {{ match.team1.join(' & ') }}:
+              <input type="number" v-model.number="match.team1Score" min="0" width="10"/>
+            </label>
+            <label>
+              {{ match.team2.join(' & ') }}:
+              <input type="number" v-model.number="match.team2Score" min="0" width="20"/>
+            </label>
+          </div>
+        </div>
+        <button @click="submitScores">Submit Scores & Next Round</button>
+        <button @click="endTournament">End Tournament & Show Report</button>
+      </div>
+      <div v-if="showReport" class="report">
+        <img src="https://i.imgur.com/vIEktyV.jpeg" alt="Net Ninja Logo" style="width: 100px;">
+        <h2>Final Scores</h2>
+        <ul class="score-list">
+          <li v-for="(score, player) in sortedScores" :key="player">
+            {{ player }}: {{ score }}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, reactive, computed } = Vue;
+
+    createApp({
+      setup() {
+        const playerInput = ref('');
+        const players = ref([]);
+        const scores = reactive({});
+        const matches = ref([]);
+        const currentRound = ref(0);
+        const tournamentStarted = ref(false);
+        const showReport = ref(false);
+
+        const startTournament = () => {
+          players.value = playerInput.value
+            .split('\n')
+            .map(name => name.trim())
+            .filter(name => name);
+          if (players.value.length % 4 !== 0) {
+            alert('Number of players must be divisible by 4.');
+            return;
+          }
+          players.value.forEach(player => {
+            scores[player] = 0;
+          });
+          tournamentStarted.value = true;
+          generateNextRound();
+        };
+
+        const generateNextRound = () => {
+          currentRound.value++;
+          const sortedPlayers = [...players.value].sort((a, b) => scores[a] - scores[b]);
+          console.log('Sorted Players:', sortedPlayers);
+          console.log('Scores:', scores);
+          matches.value = [];
+          for (let i = 0; i < sortedPlayers.length; i += 4) {
+            matches.value.push({
+              team1: [sortedPlayers[i], sortedPlayers[i + 3]],
+              team2: [sortedPlayers[i + 1], sortedPlayers[i + 2]],
+              team1Score: 0,
+              team2Score: 0,
+            });
+          }
+        };
+
+        const submitScores = () => {
+          matches.value.forEach(match => {
+            match.team1.forEach(player => {
+              scores[player] += match.team1Score;
+            });
+            match.team2.forEach(player => {
+              scores[player] += match.team2Score;
+            });
+          });
+          generateNextRound();
+        };
+
+        const endTournament = () => {
+          showReport.value = true;
+        };
+
+        const sortedScores = computed(() => {
+          return Object.entries(scores)
+            .sort(([, scoreA], [, scoreB]) => scoreB - scoreA)
+            .reduce((acc, [player, score]) => {
+              acc[player] = score;
+              return acc;
+            }, {});
+        });
+
+        return {
+          playerInput,
+          players,
+          scores,
+          matches,
+          currentRound,
+          tournamentStarted,
+          showReport,
+          startTournament,
+          generateNextRound,
+          submitScores,
+          endTournament,
+          sortedScores,
+        };
+      },
+    }).mount('#app');
+  </script>
+</body>
+</html>
