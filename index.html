@@ -156,7 +156,7 @@
 </head>
 <body>
   <div id="app">
-    <img src="https://i.imgur.com/vIEktyV.jpeg" alt="Net Ninja Logo" style="width: 100px;">
+    <img src="netninjas.jpeg" alt="Net Ninja Logo" style="width: 100px;">
     <h1>Net Ninja's Match Generator</h1>
     <div v-if="!tournamentStarted">
       <p>Enter player names (one per line, divisible by 4):</p>
@@ -185,7 +185,7 @@
         <button @click="endTournament">End Tournament & Show Report</button>
       </div>
       <div v-if="showReport" class="report">
-        <img src="https://i.imgur.com/vIEktyV.jpeg" alt="Net Ninja Logo" style="width: 100px;">
+        <img src="netninjas.jpeg" alt="Net Ninja Logo" style="width: 100px;">
         <h2>Final Scores</h2>
         <ul class="score-list">
           <li v-for="(score, player) in sortedScores" :key="player">
