@@ -1,23 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
   <title>Net Ninja's Match Generator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Net Ninja's Match Generator">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
   <style>
   html, body {
-    height: 100%;
     margin: 0;
     padding: 0;
+    height: auto;
+    overflow-x: hidden;
   }
   body {
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     background-color: #000;
     color: #fff;
-    font-family: 'Helvectica', Arial, sans-serif;
+    font-family: "Nunito", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 300;
+    font-style: normal;
     margin: 0;
     padding: 0;
   }
@@ -26,16 +33,20 @@
     border-radius: 16px;
     box-shadow: 0 4px 24px rgba(0,0,0,0.5);
     padding: 2rem 1.5rem;
-    max-width: 420px;
-    /* width: 100%; */
-    margin: 2rem 1rem;
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
+    max-width: 500px;
+    margin: 2rem auto;
+  }
+  .init-screen {
+    text-align: center;
   }
   h1, h2 {
     text-align: center;
     color: #FF3EA0;
+    font-weight: 700;
   }
   h2 {
     margin-top: 1rem;
@@ -62,14 +73,12 @@
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    font-weight: bold;
     letter-spacing: 1px;
   }
   button:hover {
     background-color: #b82c27;
   }
   .tournament {
-    padding-top:2rem;
     width: 100%;
   }
   .match {
@@ -82,8 +91,8 @@
     color: #fff;
   }
   .match-title {
-    font-size: 1.2rem;
-    color: #EEE;
+    font-size: 1.1rem;
+    color: #FF3EA0;
     margin-bottom: 0.5rem;
   }
   .score-input {
@@ -91,6 +100,7 @@
     flex-direction: row;
     gap: 0.5rem;
     align-items: flex-start;
+    width: 100%;
   }
   .score-input label {
     font-size: 1rem;
@@ -120,14 +130,18 @@
     font-size: 0.8rem;
     color: #888;
   }
+  .bold {
+    font-weight: 700;
+    color: #eee;
+  }
   .report {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 2rem;
+    margin-top: 1rem;
   }
   .score-list {
-    width: 100%;
+    width: 70%;
     padding: 0;
     margin: 0;
     list-style: none;
@@ -137,7 +151,7 @@
   @media (max-width: 500px) {
     #app {
       padding: 1rem 0.5rem;
-      max-width: 98vw;
+      max-width: 95vw;
     }
     h1, h2 {
       font-size: 1.3rem;
@@ -156,10 +170,10 @@
 </head>
 <body>
   <div id="app">
-    <img src="netninjas.jpeg" alt="Net Ninja Logo" style="width: 100px;">
-    <h1>Net Ninja's Match Generator</h1>
-    <div v-if="!tournamentStarted">
-      <p>Enter player names (one per line, divisible by 4):</p>
+    <div v-if="!tournamentStarted" class="init-screen">
+      <img src="https://i.imgur.com/vIEktyV.jpeg" alt="Net Ninja Logo" style="width: 100px;">
+      <h1>Net Ninja's Match Generator</h1>
+      <p>Enter player names: <br> (one per line, divisible by 4)</p>
       <textarea v-model="playerInput" class="player-input" placeholder="..." class="player-input"></textarea>
       <button @click="startTournament">Start Tournament</button>
     </div>
@@ -168,8 +182,10 @@
       <div v-if="!showReport">
         <h2>Round {{ currentRound }}</h2>
         <div v-for="(match, index) in matches" :key="index" class="match">
-          <div class="match-title"><strong>Match {{ index + 1 }}</strong>: {{ match.team1.join(' & ') }} 
-            <span class="small">vs</span> {{ match.team2.join(' & ') }}</div><br>
+          <div class="match-title">Match {{ index + 1 }}: 
+            <span class="bold">{{ match.team1.join(' & ') }}</span></b>
+            <span class="small"> vs </span><span class="bold">{{ match.team2.join(' & ') }}</span>
+          </div><br>
           <div class="score-input">
             <label>
               {{ match.team1.join(' & ') }}:
@@ -185,13 +201,17 @@
         <button @click="endTournament">End Tournament & Show Report</button>
       </div>
       <div v-if="showReport" class="report">
-        <img src="netninjas.jpeg" alt="Net Ninja Logo" style="width: 100px;">
+        <img src="https://i.imgur.com/vIEktyV.jpeg" alt="Net Ninja Logo" style="width: 100px;">
         <h2>Final Scores</h2>
         <ul class="score-list">
           <li v-for="(score, player) in sortedScores" :key="player">
             {{ player }}: {{ score }}
           </li>
         </ul>
+        <p class="small">Total rounds played: {{ currentRound - 1 }}<br>Thank you for playing!</p>
+        <br><br>
+
+        <button @click="resetGame" >Start New Game</button>
       </div>
     </div>
   </div>
@@ -235,8 +255,8 @@
             matches.value.push({
               team1: [sortedPlayers[i], sortedPlayers[i + 3]],
               team2: [sortedPlayers[i + 1], sortedPlayers[i + 2]],
-              team1Score: 0,
-              team2Score: 0,
+              team1Score: null,
+              team2Score: null,
             });
           }
         };
@@ -266,19 +286,30 @@
             }, {});
         });
 
+        const resetGame = () => {
+          playerInput.value = '';
+          players.value = [];
+          matches.value = [];
+          currentRound.value = 0;
+          tournamentStarted.value = false;
+          showReport.value = false;
+          Object.keys(scores).forEach(k => delete scores[k]);
+        };
+
         return {
+          currentRound,
+          endTournament,
+          generateNextRound,
+          matches,
           playerInput,
           players,
+          resetGame,
           scores,
-          matches,
-          currentRound,
-          tournamentStarted,
           showReport,
-          startTournament,
-          generateNextRound,
-          submitScores,
-          endTournament,
           sortedScores,
+          startTournament,
+          submitScores,
+          tournamentStarted,
         };
       },
     }).mount('#app');
