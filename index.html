@@ -173,7 +173,7 @@
     <div v-if="!tournamentStarted" class="init-screen">
       <img src="https://i.imgur.com/vIEktyV.jpeg" alt="Net Ninja Logo" style="width: 100px;">
       <h1>Net Ninja's Match Generator</h1>
-      <p>Enter player names: <br> (one per line, divisible by 4)</p>
+      <p>Enter player names: <br> (one per line, multiples of 4)</p>
       <textarea v-model="playerInput" class="player-input" placeholder="..." class="player-input"></textarea>
       <button @click="startTournament">Start Tournament</button>
     </div>
